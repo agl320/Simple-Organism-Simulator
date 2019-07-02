@@ -101,7 +101,7 @@ screen.fill(WHITE)
 pygame.display.flip()
 
 # initializing cells
-john = Cell(50, 50, random.choice(directionList), 10, 10, width, height)
+john = Cell(50, 50, random.choice(directionList), 5, 10, width, height)
 foodList = addFood(foodList, 400, 50)
 
 # looping window
