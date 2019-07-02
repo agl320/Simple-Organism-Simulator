@@ -1,2 +1,2 @@
-# Cell-Simulator
+# Animal Simulator
 uses pygame. not good
