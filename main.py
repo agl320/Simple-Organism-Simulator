@@ -6,8 +6,12 @@ from food import Food
 from cell import Cell
 
 
-def drawCell(cellName):
-    pygame.draw.circle(screen, GREEN, cellName.Pos(), cellName.radius)
+def drawCell(cellName, state): # ACT = active RST = resting
+    if(state == 'ACT'):
+        pygame.draw.circle(screen, GREEN, cellName.Pos(), cellName.radius)
+    elif(state == 'RST'):
+        pygame.draw.circle(screen, BLUE, cellName.Pos(), cellName.radius)
+
 
 def drawFood(foodList):
     if(len(foodList) > 0):
@@ -17,6 +21,31 @@ def drawFood(foodList):
 def addFood(foodList, x, y):
     foodList.append(Food(x,y))
     return foodList
+
+def cellAction(cell, foodList):
+    if(cell.resting == False):
+        if(cell.stamina > 0):
+            foodList = updateFood(cell, foodList)
+            drawCell(cell, 'ACT')
+            cell.StaminaMove()
+            cell.setState(False)
+            return foodList
+        else:
+            drawCell(cell, 'RST')
+            cell.StaminaRest()
+            cell.setState(True)
+            return foodList
+    else:
+        if (cell.stamina != 100):
+            drawCell(cell, 'RST')
+            cell.StaminaRest()
+            cell.setState(True)
+            return foodList
+        else:
+            drawCell(cell, 'RST')
+            cell.StaminaRest()
+            cell.setState(False)
+            return foodList
 
 
 def updateFood(cellName, foodList):
@@ -86,10 +115,8 @@ while run:
     time.sleep(0.2)
 
     # draw
-    foodList = updateFood(john, foodList)
+    foodList = cellAction(john, foodList)
     drawFood(foodList)
-    drawCell(john)
-
 
 
     for event in pygame.event.get():
