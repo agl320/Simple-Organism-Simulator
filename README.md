@@ -1,2 +1,2 @@
 # Cell-Simulator
-WIP. Not good
+WIP. Not good. Visual on pygame
