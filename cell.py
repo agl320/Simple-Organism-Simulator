@@ -12,11 +12,15 @@ class Cell:
         self.speed = speed
         self.width = width
         self.height = height
-        self.hunger = 100
+        self.stamina = 100
+        self.resting = False
 
 
     def Pos(self):
         return self.x, self.y
+
+    def setState(self, state):
+        self.resting = state
 
     def MoveToFood(self, slopeX, slopeY):
         if(slopeX > slopeY):
@@ -30,6 +34,12 @@ class Cell:
             elif (slopeY < 0):
                 self.x -= self.speed
 
+    def StaminaMove(self):
+        self.stamina -= 10
+
+    def StaminaRest(self):
+        self.stamina += 10
+
 
     def Roam(self):
 
@@ -40,8 +50,7 @@ class Cell:
             pass
 
         else:
-            self.direction = 
-            .choice(directionList)
+            self.direction = random.choice(directionList)
 
         if (self.direction == 'N' and self.y > self.speed):
 
