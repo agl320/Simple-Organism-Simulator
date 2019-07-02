@@ -1,5 +1,3 @@
-import pygame
-import random
 from random import randint
 
 directionList = ['N', 'S', 'E', 'W']
@@ -42,7 +40,8 @@ class Cell:
             pass
 
         else:
-            self.direction = random.choice(directionList)
+            self.direction = 
+            .choice(directionList)
 
         if (self.direction == 'N' and self.y > self.speed):
 
