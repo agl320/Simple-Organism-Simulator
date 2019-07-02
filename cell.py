@@ -5,7 +5,7 @@ directionList = ['N', 'S', 'E', 'W']
 
 
 class Cell:
-    def __init__(self, x, y, direction, radius, speed, width, height):
+    def __init__(self, x, y, direction, radius, speed, width, height, hunger = 100, hungerDepletion = 5):
         self.x = x
         self.y = y
         self.direction = direction
@@ -13,6 +13,8 @@ class Cell:
         self.speed = speed
         self.width = width
         self.height = height
+        self.hunger = hunger
+        self.hungerDepletion = hungerDepletion
 
 
     def Pos(self):
@@ -28,7 +30,7 @@ class Cell:
             self.y -= self.speed
         elif(self.y < foodY):
             self.y += self.speed
-
+        self.hunger -= self.hungerDepletion
 
     def Roam(self):
 
@@ -67,4 +69,5 @@ class Cell:
 
                 self.direction = random.choice(directionList)
 
+        self.hunger -= self.hungerDepletion
 
