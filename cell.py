@@ -1,3 +1,4 @@
+import random
 from random import randint
 
 directionList = ['N', 'S', 'E', 'W']
@@ -12,33 +13,21 @@ class Cell:
         self.speed = speed
         self.width = width
         self.height = height
-        self.stamina = 100
-        self.resting = False
 
 
     def Pos(self):
         return self.x, self.y
 
-    def setState(self, state):
-        self.resting = state
 
-    def MoveToFood(self, slopeX, slopeY):
-        if(slopeX > slopeY):
-            if(slopeX > 0):
-                self.x += self.speed
-            elif(slopeX < 0):
-                self.y -= self.speed
-        else:
-            if (slopeY > 0):
-                self.y += self.speed
-            elif (slopeY < 0):
-                self.x -= self.speed
-
-    def StaminaMove(self):
-        self.stamina -= 10
-
-    def StaminaRest(self):
-        self.stamina += 10
+    def MoveToFood(self, foodX, foodY):
+        if(self.x > foodX):
+            self.x -= self.speed
+        elif(self.x < foodX):
+            self.x += self.speed
+        elif(self.y > foodY):
+            self.y -= self.speed
+        elif(self.y < foodY):
+            self.y += self.speed
 
 
     def Roam(self):
@@ -52,24 +41,30 @@ class Cell:
         else:
             self.direction = random.choice(directionList)
 
-        if (self.direction == 'N' and self.y > self.speed):
+        while(True):
 
-            self.y -= self.speed
+            if (self.direction == 'N' and self.y > self.speed):
 
-        elif (self.direction == 'S' and self.y < self.height):
+                self.y -= self.speed
+                break
 
-            self.y += self.speed
+            elif (self.direction == 'S' and self.y < self.height):
 
-        elif (self.direction == 'E' and self.x < self.width):
+                self.y += self.speed
+                break
 
-            self.x += self.speed
+            elif (self.direction == 'E' and self.x < self.width):
 
-        elif (self.direction == 'W' and self.x > self.speed):
+                self.x += self.speed
+                break
 
-            self.x -= self.speed
+            elif (self.direction == 'W' and self.x > self.speed):
 
-        else:
+                self.x -= self.speed
+                break
 
-            print('border reached')
+            else:
+
+                self.direction = random.choice(directionList)
 
 
