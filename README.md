@@ -1,2 +1,2 @@
-# Animal Simulator
-uses pygame. not good
+# Natural Selection
+Messy at the moment
