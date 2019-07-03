@@ -5,7 +5,7 @@ directionList = ['N', 'S', 'E', 'W']
 
 
 class Cell:
-    def __init__(self, x, y, direction, radius, speed, width, height, hunger = 100, hungerDepletion = 5):
+    def __init__(self, x, y, direction, radius, speed, width, height, hunger = 100, hungerDepletion = 2, state = 'active', age = 0):
         self.x = x
         self.y = y
         self.direction = direction
@@ -15,6 +15,9 @@ class Cell:
         self.height = height
         self.hunger = hunger
         self.hungerDepletion = hungerDepletion
+        self.foodCounter = 0
+        self.state = state
+        self.age = age
 
 
     def Pos(self):
