@@ -5,19 +5,21 @@ directionList = ['N', 'S', 'E', 'W']
 
 
 class Cell:
-    def __init__(self, x, y, direction, radius, speed, width, height, hunger = 100, hungerDepletion = 2, state = 'active', age = 0):
+    def __init__(self, x, y, direction, radius, speed, window_width, window_height, hunger = 100, hungerDepletion = 2, state = 'ACT', age = 0, range = 200):
         self.x = x
         self.y = y
         self.direction = direction
         self.radius = radius
         self.speed = speed
-        self.width = width
-        self.height = height
+        self.window_width = window_width
+        self.window_height = window_height
         self.hunger = hunger
         self.hungerDepletion = hungerDepletion
         self.foodCounter = 0
         self.state = state
         self.age = age
+        self.range = range
+
 
 
     def Pos(self):
@@ -25,21 +27,23 @@ class Cell:
 
 
     def MoveToFood(self, foodX, foodY):
-        if(self.x > foodX):
+
+        if self.x > foodX:
             self.x -= self.speed
-        elif(self.x < foodX):
+        elif self.x < foodX:
             self.x += self.speed
-        elif(self.y > foodY):
+        elif self.y > foodY:
             self.y -= self.speed
-        elif(self.y < foodY):
+        elif self.y < foodY:
             self.y += self.speed
+
         self.hunger -= self.hungerDepletion
 
     def Roam(self):
 
         num = randint(0, 100)
 
-        if (num >= 40):
+        if (num >= 20):
 
             pass
 
@@ -53,12 +57,12 @@ class Cell:
                 self.y -= self.speed
                 break
 
-            elif (self.direction == 'S' and self.y < self.height):
+            elif (self.direction == 'S' and self.y < self.window_height):
 
                 self.y += self.speed
                 break
 
-            elif (self.direction == 'E' and self.x < self.width):
+            elif (self.direction == 'E' and self.x < self.window_width):
 
                 self.x += self.speed
                 break
@@ -73,4 +77,6 @@ class Cell:
                 self.direction = random.choice(directionList)
 
         self.hunger -= self.hungerDepletion
+
+
 
