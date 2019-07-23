@@ -7,229 +7,322 @@ from cell import Cell
 import numpy as np
 import matplotlib.pyplot as plt
 
-def checkIfAllInRest(cellList):
-    for i in range(len(cellList)):
-        if(cellList[i].state == 'active'):
+
+# draws the cell onto the screen
+def draw_cell(cell):
+    if cell.state == 'ACT':
+        pygame.draw.circle(screen, GREEN_DARK, cell.Pos(), cell.radius)
+    elif cell.state == 'RST':
+        pygame.draw.circle(screen, BLUE, cell.Pos(), cell.radius)
+    elif cell.state == 'RPR':
+        pygame.draw.circle(screen, GREEN, cell.Pos(), cell.radius)
+
+def animation_rpr(cell):
+    pygame.draw.circle(screen, RED, cell.Pos(), cell.radius * 2)
+    time.sleep(0.1)
+    pygame.draw.circle(screen, RED_LIGHT, cell.Pos(), cell.radius * 3)
+    time.sleep(0.1)
+    pygame.draw.circle(screen, RED_LIGHT_PLUS, cell.Pos(), cell.radius * 4)
+
+def draw_food(food):
+    pygame.draw.circle(screen, BLACK, food.Pos(), 5)
+
+def cell_reproduce(cell):
+    cell_x, cell_y = cell.Pos()
+    listCell.append(Cell(cell_x, cell_y, random.choice(listDirection), cell_radius, cell_speed, screen_width, screen_height))
+    cell.foodCounter -= 1
+
+def find_closest_food(cell, listFood):
+    food_distances_list = []
+    cell_x, cell_y = cell.Pos()
+
+    if len(listFood) > 0:
+
+        for i in range(len(listFood)):
+
+            food_x, food_y = listFood[i].Pos()
+
+            # remove distances out of range
+            food_distances_list.append(math.sqrt((food_x - cell_x) ** 2 + (food_y - cell_y) ** 2))
+            # distance formula; finds distances between cell and all foods
+
+        closest_food_index = food_distances_list.index(min(food_distances_list))
+
+        if min(food_distances_list) < cell.range:
+
+            closest_food = listFood[closest_food_index] # closest food; type object
+
+            Cfood_x, Cfood_y = closest_food.Pos() # get closest food coordinates
+
+            if cell_x == Cfood_x and cell_y == Cfood_y:
+
+                # checking if the cell coordinates match food coordinates; cell eats food
+
+                listFood.pop(closest_food_index) # removing food from list
+
+                cell.foodCounter += 1
+                cell.hunger += food_regen
+
+                if(cell.state == 'RPR'):
+                    cell_reproduce(cell)
+                    cell.foodCounter -= 1
+                    cell.state = 'RST'
+
+            else:
+
+                cell.MoveToFood(Cfood_x, Cfood_y)
+
+                cell_x, cell_y = cell.Pos()
+
+                if cell_x == Cfood_x and cell_y == Cfood_y:
+                    # checking if the cell coordinates match food coordinates; cell eats food
+
+                    listFood.pop(closest_food_index)  # removing food from list
+
+                    cell.foodCounter += 1
+                    cell.hunger += food_regen
+
+                    if (cell.state == 'RPR'):
+                        cell_reproduce(cell)
+                        cell.foodCounter -= 1
+                        cell.state = 'RST'
+        else:
+            cell.Roam()
+
+
+
+    else:
+        cell.Roam() # if there are no food present (in vicinity) then randomly roam
+
+    return listFood # return updated food list
+
+
+def action_cell(cell, listFood):
+
+    if cell.age < cell_lifetime and cell.foodCounter > 0 and cell.state == 'ACT':
+        # if the cell is not at the end of lifetime and has eaten 1 food
+        rpr_chance = random.randint(0, 1 + cell.age) # chance the cell will attempt to reproduce
+
+        if rpr_chance == 0:
+            cell.state = 'RPR' # reproduce
+
+        else:
+            cell.state = 'RST' # rest
+
+    elif cell.age < cell_lifetime and cell.foodCounter == 0 and cell.state == 'ACT':
+        # placeholder; the cell has not ate any food and not at end of lifetime, stays in active state
+        pass
+
+    elif cell.age == cell_lifetime:
+
+        cell.state = 'RPR'
+
+        # if cell is at the end of lifetime, the cell will attempt to reproduce
+
+    elif cell.state == 'RST':
+        pass
+
+    elif cell.state == 'RPR':
+        pass
+
+    else:
+        print('ERROR')
+
+
+    if cell.state == 'ACT':
+        listFood = find_closest_food(cell, listFood)
+
+    elif cell.state == 'RST':
+        pass # placeholder as cell does nothing
+
+    elif cell.state == 'RPR':
+        listFood = find_closest_food(cell, listFood)
+
+
+    return listFood
+
+def draw_objects(listCell, listFood):
+    for i in range(len(listCell)):
+        draw_cell(listCell[i])
+
+    for i in range(len(listFood)):
+        draw_food(listFood[i])
+
+def cell_age(listCell): # cell ages by one
+    for i in range(len(listCell)):
+        listCell[i].age += 1
+
+    return listCell
+
+def reset_all_state(listCell, state, ignoreState): # reset cell states to specified state
+    for i in range(len(listCell)):
+        if(listCell[i].state != ignoreState):
+            listCell[i].state = state
+    return listCell
+
+def check_all_state(listCell, state):
+    for i in range(len(listCell)):
+        if listCell[i].state != state:
             return False
     return True
 
-def drawCell(cellName, state):
-    if(state == 'active'):
-        pygame.draw.circle(screen, GREEN, cellName.Pos(), cellName.radius)
-    elif(state == 'rest'):
-        pygame.draw.circle(screen, BLUE, cellName.Pos(), cellName.radius)
-    elif(state == 'reproduce'):
-        pygame.draw.circle(screen, PINK, cellName.Pos(), cellName.radius)
+def reset_all_food(listCell):
+    for i in range(len(listCell)):
+        if(listCell[i].state != 'RPR'):
+            listCell[i].foodCounter = 0
 
-def drawFood(foodList):
-    if(len(foodList) > 0):
-        for i in range(len(foodList)):
-            pygame.draw.circle(screen, BLACK, foodList[i].Pos(), 5)
+    return listCell
 
-def addFood(foodList, x, y):
-    foodList.append(Food(x,y))
-    return foodList
+def remove_zero_hunger(listCell): # removes cells with no hunger
+    listCell_tmp = []
+    for i in range(len(listCell)):
+        if(listCell[i].hunger != 0):
+            listCell_tmp.append(listCell[i])
 
-def reproduce(cellName, cellList):
-    x, y = cellName.Pos()
-    y += 10
-    pygame.draw.circle(screen, GREEN, (x, y), cellName.radius)
-    cellList.append(Cell(x, y,
-                         random.choice(directionList), 5, 10, width - 10 - sideBarWidth, height - 10))
-
-    return cellList
-
-def cellAction(cell, foodList, cellList):
-    choice = random.randint(0,2)
-    if(cell.state == 'active'):
-
-        if (cell.foodCounter == 0):
-
-            foodList = updateFood(cell, foodList)
-            cell.state = 'active'
-
-        elif(cell.foodCounter == 1):
-
-            if(choice == 0):
-                cell.state = 'rest'
-            else:
-                cell.state = 'reproduce'
-
-    elif(cell.state == 'reproduce'):
-        if(cell.foodCounter > 1):
-            cell.state = 'rest'
-            cellList = reproduce(cell, cellList)
-        else:
-            foodList = updateFood(cell, foodList)
-            cell.state = 'reproduce'
-
-    drawCell(cell, cell.state)
-
-    return foodList, cellList
-
-def updateFood(cellName, foodList):
-    distanceList = []
-    x_1, y_1 = cellName.Pos()
-
-    if(len(foodList) > 0):
-
-        for i in range(len(foodList)):
-            x_2, y_2 = foodList[i].Pos()
-            distanceList.append(math.sqrt((x_2 - x_1)**2 + (y_2 - y_1)**2))
-
-        minPos = distanceList.index(min(distanceList))
-
-        closestFood = foodList[minPos]
-
-        x_2, y_2 = closestFood.Pos()
-
-        if(x_1 == x_2 and y_1 == y_2):
-
-            foodList.pop(minPos)
-            cellName.hunger = 100
-            cellName.foodCounter += 1
-
-        else:
-
-            cellName.MoveToFood(x_2, y_2)
-
-            x_1, y_1 = cellName.Pos()
-
-            if (x_1 == x_2 and y_1 == y_2):
-                foodList.pop(minPos)
-                cellName.hunger = 100
-                cellName.foodCounter += 1
-    else:
-        cellName.Roam
-
-    return foodList
+    return listCell_tmp
 
 
-
-# foodList stores all instances of food; can remove and add
-# distanceList stores the distances between named cell and all foods, gets closest
-foodList = []
-cellList = []
-directionList = ['N', 'S', 'E', 'W']
-generation = 0
-sideBarWidth = 200
-populationList = []
-genList = []
 
 # colours
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
+GREEN_DARK = (2, 189, 2)
 RED = (255, 0, 0)
-LGREY = (215, 219, 224)
+RED_LIGHT = (255,100, 100)
+RED_LIGHT_PLUS = (255, 172, 172)
+GREY_LIGHT = (215, 219, 224)
 PINK = (245, 66, 224)
+
+
+# variables
+listFood = []  # list of all food instances
+listCell = []  # list of all cell instances
+listCell_tmp = [] # list of cell instances used to remove cells
+listDirection = ['N', 'S', 'E', 'W']  # list of all directions a cell may go
+cell_radius = 5
+cell_lifetime = 3
+food_regen = 100
+number_of_food = 200
+number_of_cells = 20
+
+# graphing
+population_per_generation = []
 
 # initializing the pygame window
 pygame.init()
 pygame.font.init()
-width, height = 1200, 750
-screen = pygame.display.set_mode((width, height))
+screen_width, screen_height = 1200, 750  # screen with and height
+screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Cell Simulator')
+fontTNR = pygame.font.SysFont('Times New Roman', 15)
 screen.fill(WHITE)
-# updating window
 pygame.display.flip()
 
-# initializing cells
+for i in range(number_of_cells):
 
-for i in range(1):
-    cellList.append(Cell(random.randrange(10, width - 10 - sideBarWidth, 10), random.randrange(10, height - 10, 10), random.choice(directionList), 5, 10, width - 10 - sideBarWidth, height - 10))
+    # cell creation
 
-# showing simulation information
+    cell_x = random.randrange(cell_radius, screen_width - cell_radius, cell_radius)
+    cell_y = random.randrange(cell_radius, screen_height - cell_radius, cell_radius)
+    cell_direction = random.choice(listDirection)
 
-font = pygame.font.SysFont('Times New Roman', 15)
+    cell_speed = cell_radius
 
-# looping window
+    listCell.append(Cell(cell_x, cell_y, random.choice(listDirection), cell_radius, cell_speed, screen_width, screen_height))
+
+# spawns food beforehand in order to not trigger aging
+
+for i in range(number_of_food):
+    food_x_pos = random.randrange(cell_radius, screen_width - cell_radius, cell_radius)
+    food_y_pos = random.randrange(cell_radius, screen_height - cell_radius, cell_radius)
+    listFood.append(Food(food_x_pos, food_y_pos))
 
 run = True
 
+# running pygame window
+
+population_per_generation.append(len(listCell))
+
 while run:
+
+    '''
+    Order of events:
+    
+    - Spawns food if there are none // cell age
+    - Cell action
+    - Draw objects
+    - Remove cells who are at end of lifetime
+    - End program checks
+    '''
+
+    if len(listFood) == 0 or check_all_state(listCell, 'RST'): # if no food, draw food
+
+        population_per_generation.append(len(listCell))
+
+        listCell = cell_age(listCell)
+
+        for i in range(number_of_food):
+
+            food_x_pos = random.randrange(cell_radius, screen_width - cell_radius, cell_radius)
+            food_y_pos = random.randrange(cell_radius, screen_height - cell_radius, cell_radius)
+
+            listFood.append(Food(food_x_pos, food_y_pos))
+
+        listCell_tmp = []
+
+        for i in range(len(listCell)):
+            if listCell[i].age <= cell_lifetime:
+                listCell_tmp.append(listCell[i])
+
+        del listCell[:]
+
+        listCell = listCell_tmp[:]
+
+        listCell = reset_all_food(listCell)
+
+        listCell = reset_all_state(listCell, 'ACT', 'RPR')
+
+    if listCell:
+        for i in range(len(listCell)):
+            # cell action
+
+            listFood = action_cell(listCell[i], listFood)
+
+
+
+    listCell = remove_zero_hunger(listCell)
+
+    #time.sleep(0.03)  # 0.2 second pause between frames
 
     screen.fill(WHITE)
 
-    # displaying simulation info
-    pygame.draw.rect(screen, LGREY, [1000, 0, sideBarWidth, 750])
+    draw_objects(listCell, listFood)
 
-    simText = font.render(f'Generation: {generation}', True, BLACK)
-    screen.blit(simText, (width - round(sideBarWidth / 2) - 50, 100))
+    pygame.display.flip()  # update the screen
 
-    aliveText = font.render(f'Alive: {len(cellList)}', True, BLACK)
-    screen.blit(aliveText, (width - round(sideBarWidth/2)-50,150))
+    # remove cells
 
-    space = 0
-
-    for i in range(len(cellList)):
-        hungerText = font.render(f'Hunger: {cellList[i].hunger}', True, BLACK)
-        screen.blit(hungerText, (width - round(sideBarWidth / 2) - 50, 200 + space))
-
-        ageText = font.render(f'Age: {cellList[i].age}', True, BLACK)
-        screen.blit(ageText, (width - round(sideBarWidth / 2) - 50, 225 + space))
-
-        space += 50
-
-    if (len(foodList) == 0 or checkIfAllInRest(cellList) == True):
-
-        populationCtr = 0
-
-        for i in range(len(cellList)):
-            populationCtr += 1
-            if (cellList[i].state == 'rest'):
-                cellList[i].state = 'active'
-                cellList[i].foodCounter = 0
-            cellList[i].age += 1
-
-        for i in range(10):
-            foodList = addFood(foodList, random.randrange(10, width - 10 - sideBarWidth, 10),
-                               random.randrange(10, height - 10 - sideBarWidth, 10))
-
-        populationList.append(populationCtr)
-        genList.append(generation)
-        generation += 1
-
-
-    newCellList = []
-
-    for i in range(len(cellList)):
-        if (cellList[i].hunger > 0 and cellList[i].age < 3):
-            newCellList.append(cellList[i])
-
-    cellList = newCellList
-
-
-
-    # frame every 0.2s
-    time.sleep(0.2)
-
-    # draw
-    for i in range(len(cellList)):
-        foodList, cellList = cellAction(cellList[i], foodList, cellList)
-
-    drawFood(foodList)
-
-    if (len(cellList) == 0):
+    if not listCell:  # if there are no more cells; end program
         time.sleep(1)
         run = False
+        break
 
-    for event in pygame.event.get():
+    for event in pygame.event.get():  # if program is exited
         if event.type == pygame.QUIT:
             run = False
+            break
 
-    pygame.display.flip()
+y = []
+y = population_per_generation[:]
+x = []
+
+for i in range(len(population_per_generation)):
+    x.append(i)
+
+plt.plot(x, y, 'go--')
+plt.show()
 
 pygame.quit()
 
-
-x = genList
-y = populationList
-
-# Create the plot
-plt.plot(x, y, 'go--')
-# r- is a style code meaning red solid line
-
-# Show the plot
-plt.show()
