@@ -1,2 +1,2 @@
 # Natural Selection
-Messy at the moment
+Cells run around and eat food. Mutations can be added.
