@@ -1,3 +1,3 @@
-# IE_NaturalSelectionV1
+# IE_CellEatFood
 
 Cell eat food
