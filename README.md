@@ -1,6 +1,6 @@
 # Simple Survival Simulation
 
-A simple cell survival simulation made by me back in 2018 using PyGame.
+A simple cell survival simulation made by me back when I was younger using PyGame.
 
 Features:
 - Simulation of cells that exhibited a predator-prey dynamic; cells are programmed to only consume a specific type of cell
