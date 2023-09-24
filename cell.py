@@ -20,11 +20,8 @@ class Cell:
         self.age = age
         self.range = range
 
-
-
     def Pos(self):
         return self.x, self.y
-
 
     def MoveToFood(self, foodX, foodY):
 

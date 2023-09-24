@@ -4,7 +4,6 @@ import pygame
 import random
 from food import Food
 from cell import Cell
-import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -27,11 +26,13 @@ def animation_rpr(cell):
 def draw_food(food):
     pygame.draw.circle(screen, BLACK, food.Pos(), 5)
 
+# cell reproduction
 def cell_reproduce(cell):
     cell_x, cell_y = cell.Pos()
     listCell.append(Cell(cell_x, cell_y, random.choice(listDirection), cell_radius, cell_speed, screen_width, screen_height))
     cell.foodCounter -= 1
 
+# calculates distance towards closest food source
 def find_closest_food(cell, listFood):
     food_distances_list = []
     cell_x, cell_y = cell.Pos()
@@ -88,8 +89,6 @@ def find_closest_food(cell, listFood):
                         cell.state = 'RST'
         else:
             cell.Roam()
-
-
 
     else:
         cell.Roam() # if there are no food present (in vicinity) then randomly roam
@@ -196,15 +195,22 @@ GREY_LIGHT = (215, 219, 224)
 PINK = (245, 66, 224)
 
 
-# variables
+# DATA INIT
 listFood = []  # list of all food instances
 listCell = []  # list of all cell instances
 listCell_tmp = [] # list of cell instances used to remove cells
 listDirection = ['N', 'S', 'E', 'W']  # list of all directions a cell may go
+
+# INITIAL CONDITIONS
+# cell size
 cell_radius = 5
+# rounds before a cell dies
 cell_lifetime = 3
-food_regen = 100
-number_of_food = 200
+# food regeneration after each round
+food_regen = 100 
+# number of starting food cells
+number_of_food = 100
+# number of starting cells
 number_of_cells = 20
 
 # graphing
@@ -305,9 +311,10 @@ while run:
     # remove cells
 
     if not listCell:  # if there are no more cells; end program
-        time.sleep(1)
         run = False
         break
+
+    time.sleep(0.001)
 
     for event in pygame.event.get():  # if program is exited
         if event.type == pygame.QUIT:
